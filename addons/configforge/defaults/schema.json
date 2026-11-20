@@ -1,0 +1,142 @@
+{
+	"format": "configforge/1",
+	"version": 1,
+	"comment": "配置工坊示例结构：覆盖枚举、结构嵌套、继承、多态、列表、set、字典、跨表引用与各类约束",
+	"enums": [
+		{
+			"name": "ItemQuality",
+			"comment": "道具品质",
+			"values": [
+				{ "name": "Common", "value": 1, "alias": "普通" },
+				{ "name": "Rare", "value": 2, "alias": "稀有" },
+				{ "name": "Epic", "value": 3, "alias": "史诗" }
+			]
+		},
+		{
+			"name": "EquipSlot",
+			"comment": "装备位",
+			"values": [
+				{ "name": "Weapon", "value": 1, "alias": "武器" },
+				{ "name": "Armor", "value": 2, "alias": "护甲" },
+				{ "name": "Accessory", "value": 3, "alias": "饰品" }
+			]
+		}
+	],
+	"beans": [
+		{
+			"name": "Reward",
+			"comment": "掉落奖励",
+			"fields": [
+				{ "name": "itemId", "type": "int", "ref": "TbItem", "comment": "道具 id" },
+				{ "name": "count", "type": "int", "min": 1, "max": 999, "comment": "数量" }
+			]
+		},
+		{
+			"name": "Effect",
+			"comment": "技能效果（多态基类，数据里用 $type 指定具体子类型）",
+			"abstract": true,
+			"fields": [
+				{ "name": "id", "type": "int", "min": 1, "comment": "效果 id" }
+			]
+		},
+		{
+			"name": "DamageEffect",
+			"parent": "Effect",
+			"comment": "伤害效果",
+			"fields": [
+				{ "name": "power", "type": "int", "min": 0, "comment": "伤害值" },
+				{ "name": "element", "type": "string", "comment": "元素" }
+			]
+		},
+		{
+			"name": "HealEffect",
+			"parent": "Effect",
+			"comment": "治疗效果",
+			"fields": [
+				{ "name": "power", "type": "int", "min": 0, "comment": "治疗量" },
+				{ "name": "overTime", "type": "bool", "comment": "是否持续治疗" }
+			]
+		},
+		{
+			"name": "Item",
+			"comment": "道具",
+			"fields": [
+				{ "name": "id", "type": "int", "min": 1, "comment": "道具 id" },
+				{ "name": "name", "type": "string", "required": true, "len": [1, 16], "comment": "名称" },
+				{ "name": "quality", "type": "ItemQuality", "comment": "品质" },
+				{ "name": "slot", "type": "EquipSlot", "comment": "装备位" },
+				{ "name": "price", "type": "int", "min": 0, "max": 999999, "comment": "价格" },
+				{ "name": "tags", "type": "list,string", "sep": "|", "comment": "标签" },
+				{ "name": "attrs", "type": "map,string,int", "sep": "|", "comment": "属性加成，形如 攻击:12" },
+				{ "name": "icon", "type": "string", "path": "res://assets/icons", "comment": "图标（相对 assets/icons）" },
+				{ "name": "desc", "type": "string", "comment": "描述" }
+			]
+		},
+		{
+			"name": "Monster",
+			"comment": "怪物",
+			"fields": [
+				{ "name": "id", "type": "int", "min": 1, "comment": "怪物 id" },
+				{ "name": "name", "type": "string", "required": true, "comment": "名称" },
+				{ "name": "level", "type": "int", "min": 1, "max": 100, "comment": "等级" },
+				{ "name": "hp", "type": "int", "min": 1, "comment": "生命上限" },
+				{ "name": "attack", "type": "int", "min": 0, "comment": "攻击力" },
+				{ "name": "mainDrop", "type": "int", "ref": "TbItem", "comment": "主掉落道具 id" },
+				{ "name": "tags", "type": "list,string", "sep": "|", "comment": "标签" }
+			]
+		},
+		{
+			"name": "Skill",
+			"comment": "技能",
+			"fields": [
+				{ "name": "id", "type": "int", "min": 1, "comment": "技能 id" },
+				{ "name": "name", "type": "string", "required": true, "comment": "名称" },
+				{ "name": "cooldown", "type": "float", "min": 0, "max": 60, "comment": "冷却（秒）" },
+				{ "name": "effects", "type": "list,Effect", "comment": "效果列表（多态）" }
+			]
+		},
+		{
+			"name": "DropTable",
+			"comment": "掉落表",
+			"fields": [
+				{ "name": "id", "type": "int", "min": 1, "comment": "记录 id" },
+				{ "name": "monsterId", "type": "int", "ref": "TbMonster", "comment": "所属怪物 id" },
+				{ "name": "items", "type": "list,Reward", "comment": "掉落项" }
+			]
+		}
+	],
+	"tables": [
+		{
+			"name": "TbItem",
+			"bean": "Item",
+			"input": "*@item.json",
+			"mode": "map",
+			"group": "c",
+			"comment": "道具表（客户端）"
+		},
+		{
+			"name": "TbMonster",
+			"bean": "Monster",
+			"input": "*@monster.json",
+			"mode": "map",
+			"group": "c",
+			"comment": "怪物表（客户端）"
+		},
+		{
+			"name": "TbSkill",
+			"bean": "Skill",
+			"input": "*@skill.json",
+			"mode": "map",
+			"group": "c",
+			"comment": "技能表（多态效果）"
+		},
+		{
+			"name": "TbDrop",
+			"bean": "DropTable",
+			"input": "*@drop.json",
+			"mode": "map",
+			"group": "s",
+			"comment": "掉落表（仅服务端分组）"
+		}
+	]
+}

@@ -1,0 +1,17 @@
+# Created by DSH GitHub Upload
+node_modules/
+dist/
+build/
+out/
+target/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+*.log

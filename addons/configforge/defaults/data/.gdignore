@@ -1,0 +1,3 @@
+# 让 Godot 跳过此目录（详见 cfg_src/Data/.gdignore 里的说明）。
+# 这个文件会随 defaults/ 一起被复制到新工程的 cfg_src/Data/，保证移植后也不会被
+# csv_translation importer 误当成翻译表。
